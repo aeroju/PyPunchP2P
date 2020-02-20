@@ -88,16 +88,16 @@ ChangedAddressError = "Meet an error, when do Test1 on Changed IP and Port"
 
 def _initialize():
     items = dictAttrToVal.items()
-    for i in xrange(len(items)):
-        dictValToAttr.update({items[i][1]: items[i][0]})
+    for key,item in items:
+        dictValToAttr.update({item: key})
     items = dictMsgTypeToVal.items()
-    for i in xrange(len(items)):
-        dictValToMsgType.update({items[i][1]: items[i][0]})
+    for key,item in items:
+        dictValToMsgType.update({item: key})
 
 
 def gen_tran_id():
     a = ''
-    for i in xrange(32):
+    for i in range(32):
         a += random.choice('0123456789ABCDEF')  # RFC3489 128bits transaction ID
     #return binascii.a2b_hex(a)
     return a
@@ -134,8 +134,8 @@ def stun_test(sock, host, port, source_ip, source_port, send_data=""):
                     retVal['Resp'] = False
                     return retVal
         msgtype = binascii.b2a_hex(buf[0:2])
-        bind_resp_msg = dictValToMsgType[msgtype] == "BindResponseMsg"
-        tranid_match = tranid.upper() == binascii.b2a_hex(buf[4:20]).upper()
+        bind_resp_msg = dictValToMsgType[msgtype.decode('utf8')] == "BindResponseMsg"
+        tranid_match = tranid.upper() == binascii.b2a_hex(buf[4:20]).upper().decode('utf8')
         if bind_resp_msg and tranid_match:
             recvCorr = True
             retVal['Resp'] = True
@@ -143,10 +143,10 @@ def stun_test(sock, host, port, source_ip, source_port, send_data=""):
             len_remain = len_message
             base = 20
             while len_remain:
-                attr_type = binascii.b2a_hex(buf[base:(base + 2)])
+                attr_type = binascii.b2a_hex(buf[base:(base + 2)]).decode('utf8')
                 attr_len = int(binascii.b2a_hex(buf[(base + 2):(base + 4)]),
                                16)
-                if attr_type == MappedAddress:  # first two bytes: 0x0001
+                if attr_type== MappedAddress:  # first two bytes: 0x0001
                     port = int(binascii.b2a_hex(buf[base + 6:base + 8]), 16)
                     ip = ".".join([
                     str(int(binascii.b2a_hex(buf[base + 8:base + 9]), 16)),
@@ -256,10 +256,11 @@ def get_ip_info(source_ip="0.0.0.0", source_port=54320, stun_host=None,
 
 
 def main():
+    #enable_logging()
     nat_type, external_ip, external_port = get_ip_info()
-    print "NAT Type:", nat_type
-    print "External IP:", external_ip
-    print "External Port:", external_port
+    print( "NAT Type:", nat_type)
+    print( "External IP:", external_ip)
+    print( "External Port:", external_port)
 
 if __name__ == '__main__':
     main()
