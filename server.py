@@ -70,7 +70,6 @@ def main():
             print("pool={0}, nat_type={1}, ok sent to client".format(pool, NATTYPE[int(nat_type_id)]))
             data, addr = sockfd.recvfrom(2)
             data = data.decode()
-            print('connection said:',data)
             if data != "ok":
                 continue
 
