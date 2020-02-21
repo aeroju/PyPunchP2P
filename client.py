@@ -84,6 +84,7 @@ class Client():
         else:
             while True:
                 data, addr = sock.recvfrom(1024)
+                data = data.decode()
                 if addr == self.target or addr == self.master:
                     sys.stdout.write(data)
                     if data == "punching...\n":  # peer是restrict
