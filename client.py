@@ -48,7 +48,10 @@ class Client():
     def request_for_connection(self, nat_type_id=0):
         self.sockfd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sockfd.sendto((self.pool + ' {0}'.format(nat_type_id)).encode(), self.master)
+        print('begin request')
         data, addr = self.sockfd.recvfrom(len(self.pool) + 3)
+        data = data.decode()
+        print('get:',data)
         if data != "ok " + self.pool:
             print(sys.stderr, "unable to request!")
             sys.exit(1)
@@ -149,7 +152,6 @@ class Client():
         我的NAT设备才能识别对方为"我已经发过包的地址". 直到收到对方的包, periodic发送停止
         """
 
-        print(test_nat_type)
         if not test_nat_type:
             nat_type, _, _ = self.get_nat_type()
         else:
