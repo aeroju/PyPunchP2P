@@ -71,7 +71,7 @@ def main():
             data, addr = sockfd.recvfrom(2)
             data = data.decode()
             print('connection said:',data)
-            if data != "ok".encode():
+            if data != "ok":
                 continue
 
             print ("request received for pool:", pool)
