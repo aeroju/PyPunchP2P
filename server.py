@@ -53,10 +53,11 @@ def main():
     ClientInfo = namedtuple("ClientInfo", "addr, nat_type_id")
     while True:
         data, addr = sockfd.recvfrom(1024)
+        data = data.decode()
         if data.startswith("msg "):
             # forward symmetric chat msg, act as TURN server
             try:
-                sockfd.sendto(data[4:], symmetric_chat_clients[addr])
+                sockfd.sendto(data[4:].encode(), symmetric_chat_clients[addr])
                 print("msg successfully forwarded to {0}".format(symmetric_chat_clients[addr]))
                 print(data[4:])
             except KeyError:
@@ -65,10 +66,11 @@ def main():
             # help build connection between clients, act as STUN server
             print ("connection from %s:%d" % addr)
             pool, nat_type_id = data.strip().split()
-            sockfd.sendto("ok {0}".format(pool), addr)
+            sockfd.sendto("ok {0}".format(pool).encode(), addr)
             print("pool={0}, nat_type={1}, ok sent to client".format(pool, NATTYPE[int(nat_type_id)]))
             data, addr = sockfd.recvfrom(2)
-            if data != "ok":
+            data = data.decode()
+            if data != "ok".encode():
                 continue
 
             print ("request received for pool:", pool)

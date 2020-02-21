@@ -36,6 +36,7 @@ class Client():
             master_ip = '127.0.0.1' if sys.argv[
                 1] == 'localhost' else sys.argv[1]
             self.master = (master_ip, int(sys.argv[2]))
+            print(self.master)
             self.pool = sys.argv[3].strip()
             self.sockfd = self.target = None
             self.periodic_running = False
@@ -147,6 +148,8 @@ class Client():
         选择哪种chat模式是根据nat_type来选择, 例如我这边的NAT设备是restrict, 那么我必须得一直向对方发包,
         我的NAT设备才能识别对方为"我已经发过包的地址". 直到收到对方的包, periodic发送停止
         """
+
+        print(test_nat_type)
         if not test_nat_type:
             nat_type, _, _ = self.get_nat_type()
         else:
@@ -157,6 +160,7 @@ class Client():
             print("NAT type is %s" % nat_type)
             self.request_for_connection(nat_type_id=4)  # Unknown NAT
 
+        print('NAT Type from:',nat_type)
         if nat_type == UnknownNAT or self.peer_nat_type == UnknownNAT:
             print("Symmetric chat mode")
             self.chat_symmetric()
