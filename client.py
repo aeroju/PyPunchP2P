@@ -70,6 +70,7 @@ class Client():
         if is_restrict:
             while True:
                 data, addr = sock.recvfrom(1024)
+                data = data.decode()
                 if self.periodic_running:
                     print("periodic_send is alive")
                     self.periodic_running = False
