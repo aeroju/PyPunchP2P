@@ -60,6 +60,7 @@ class Client():
         print(sys.stderr,
               "request sent, waiting for partner in pool '%s'..." % self.pool)
         data, addr = self.sockfd.recvfrom(8)
+        print('received:',data.decode())
 
         self.target, peer_nat_type_id = bytes2addr(data)
         print(self.target, peer_nat_type_id)
