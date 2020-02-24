@@ -32,6 +32,7 @@ class FileSender(object):
             while True:
                 data,addr = self.fsock.recvfrom(1024)
                 command,msg = de_wapper(data)
+                print('ack received:',addr,self.targer)
                 if command == COMMAND_FILETRANSFER_META_ACK:
                     if addr == self.targer:
                         return True
@@ -101,8 +102,10 @@ class FileReceiver(object):
     def _receive_file(self):
         while(True):
             data,addr = self.fsock.recvfrom(self.chunksize)
+            print('file receiver address:',addr,self.target)
             if(addr == self.target):
                 command,msg = de_wapper(data)
+                print('file receiver msg: command:',command,' body:',msg)
                 if(command==COMMAND_FILETRANSFER_META):
                     self._receive_meta(msg)
                 elif(command == COMMAND_FILETRANSFER_BODY):
