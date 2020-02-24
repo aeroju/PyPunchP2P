@@ -106,9 +106,12 @@ class FileReceiver(object):
                 missed.append(i)
         if(len(missed)==0):
             print('all chunk received, begin write file')
-            contents = sorted(self.file_content.keys())
-            for c in contents:
+            for s,c in self.file_content.items():
+                self.file.seek(s * self.chunksize)
                 self.file.write(c)
+            # contents = sorted(self.file_content.keys())
+            # for c in contents:
+            #     self.file.write(c)
             self.file.close()
             print('file saved, sending ack')
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_ACK,''),self.target)
