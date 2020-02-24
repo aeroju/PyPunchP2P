@@ -6,13 +6,12 @@ import math
 from message_wrapper import *
 
 class FileSender(object):
-    def __init__(self,filename,fsock,target,chunksize = 1024,timeout=2):
+    def __init__(self,filepath,fsock,target,chunksize = 1024,timeout=2):
+        self.filepath = filepath
         self.fsock = fsock
         self.targer = target
         self.chunksize = chunksize
         self.timeout = timeout
-
-        self.file = open(filename,'rb')
 
     def close(self):
         self.file.close()
@@ -26,21 +25,17 @@ class FileSender(object):
         self.chunks = meta['length']
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_META,meta),self.targer)
 
-    def _receive_acknowledge(self):
-        self.fsock.settimeout(self.timeout)
-        try:
-            while True:
-                print('begin receiving ack')
-                data,addr = self.fsock.recvfrom(1024)
-                command,msg = de_wapper(data)
-                print('ack received:',addr,self.targer)
-                if command == COMMAND_FILETRANSFER_META_ACK:
-                    if addr == self.targer:
-                        return True
-        except socket.timeout as e:
-            return False
-        finally:
-            self.fsock.settimeout(None)
+    def process_msg(self,command,msg):
+        if(command==COMMAND_FILETRANSFER_META_ACK):
+            print('ack received, send all')
+            self._send_all()
+        elif(command==COMMAND_FILETRANSFER_BODY_MISS):
+            missed = msg
+            self._send_chunk(missed)
+        elif(command==COMMAND_FILETRANSFER_BODY_ACK):
+            print('body ack, closing')
+            self.close()
+
 
     def _send_all(self):
         for c in range(self.chunks):
@@ -49,48 +44,18 @@ class FileSender(object):
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY,msg),self.targer)
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
 
-    def _receive_missed(self):
-        self.fsock.settimeout(self.timeout)
-        self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
-        missed = []
-        try:
-            data , addr = self.fsock.recvfrom(1024)
-            command,msg = de_wapper(data)
-            if command == COMMAND_FILETRANSFER_BODY_MISS:
-                missed.extend(msg)
-                return missed
-            elif command == COMMAND_FILETRANSFER_BODY_ACK:
-                return []
-        except socket.timeout as e:
-            return None
-        finally:
-            self.fsock.settimeout(None)
-
-
     def _send_chunk(self,missed):
         for c in missed:
             self.file.seek(c * self.chunksize)
             data = self.file.read(self.chunksize)
             msg = {'chunk':c,'data':data}
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY,msg),self.targer)
+        self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
 
-    def send(self):
+    def send(self,filename):
+        self.file = open(filename,'rb')
         self._send_meta()
         print('meta sended,waiting for ack')
-        time.sleep(1)
-        if(self._receive_acknowledge()):
-            print('ack received')
-            time.sleep(1)
-            self._send_all()
-            missed = self._receive_missed()
-            if(missed is None):
-                raise socket.timeout
-            while len(missed) != 0 :
-                time.sleep(1)
-                self._send_chunk(missed)
-                missed = self._receive_missed()
-        self.close()
-        return
 
 class FileReceiver(object):
     def __init__(self,filepath,fsock,target,chunksize=1024,timeout=2):
@@ -103,21 +68,14 @@ class FileReceiver(object):
     def close(self):
         pass
 
-    def _receive_file(self):
-        while(True):
-            data,addr = self.fsock.recvfrom(self.chunksize)
-            print('file receiver address:',addr,self.target)
-            if(addr == self.target):
-                command,msg = de_wapper(data)
-                print('file receiver msg: command:',command,' body:',msg)
-                if(command==COMMAND_FILETRANSFER_META):
-                    self._receive_meta(msg)
-                elif(command == COMMAND_FILETRANSFER_BODY):
-                    self._receive_data(msg)
-                elif(command==COMMAND_FILETRANSFER_BODY_END):
-                    ret = self._receive_file_end(msg)
-                    if(ret):
-                        break
+    def process_msg(self,command,msg):
+        print('file receiver msg: command:', command, ' body:', msg)
+        if (command == COMMAND_FILETRANSFER_META):
+            self._receive_meta(msg)
+        elif (command == COMMAND_FILETRANSFER_BODY):
+            self._receive_data(msg)
+        elif (command == COMMAND_FILETRANSFER_BODY_END):
+            self._receive_file_end(msg)
 
 
     def _receive_meta(self,msg):
@@ -149,6 +107,20 @@ class FileReceiver(object):
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_MISS,missed),self.target)
             return False
 
+class FileTransfer(object):
+    def __init__(self,file_path,fsock,target_addr,chunksize=1024):
+        self.file_sender = FileSender(file_path,fsock,target_addr,chunksize)
+        self.file_receiver = FileReceiver(file_path,fsock,target_addr,chunksize)
 
-    def run(self):
-        self._receive_file()
+    def process_msg(self,command,msg):
+        if (is_file_transfer_send(command)):
+            self.file_receiver.process_msg(command,msg)
+        elif (is_file_transfer_receive(command)):
+            self.file_sender.process_msg(command,msg)
+
+    def send(self,filename):
+        self.file_sender.send(filename)
+
+    def receive(self):
+        pass
+

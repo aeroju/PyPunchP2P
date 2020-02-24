@@ -14,19 +14,31 @@ COMMAND_FILETRANSFER_BODY_ACK=105
 
 COMMAND_TEXT = 200
 
-Commands = [COMMAND_FILETRANSFER
+Commands_File_Transfer_Receive=[COMMAND_FILETRANSFER_META_ACK
+                            ,COMMAND_FILETRANSFER_BODY_MISS
+                            ,COMMAND_FILETRANSFER_BODY_ACK
+                            ]
+Commands_File_Transfer_Send = [COMMAND_FILETRANSFER
             ,COMMAND_FILETRANSFER_META
             ,COMMAND_FILETRANSFER_BODY
-            ,COMMAND_FILETRANSFER_BODY_END
-            ,COMMAND_FILETRANSFER_META_ACK
-            ,COMMAND_FILETRANSFER_BODY_MISS
-            ,COMMAND_FILETRANSFER_BODY_ACK
+            ,COMMAND_FILETRANSFER_BODY_END]
 
-            ,COMMAND_TEXT
+Commands_File_Transfer=[]
+Commands_File_Transfer.extend(Commands_File_Transfer_Receive)
+Commands_File_Transfer.extend((Commands_File_Transfer_Send))
+Commands_Text = [COMMAND_TEXT]
+Commands = []
+Commands.extend(Commands_Text)
+Commands.extend(Commands_File_Transfer)
 
-            ]
+def is_file_transfer(command):
+    return command in Commands_File_Transfer
 
+def is_file_transfer_receive(command):
+    return command in Commands_File_Transfer_Receive
 
+def is_file_transfer_send(command):
+    return command in Commands_File_Transfer_Send
 
 
 def wapper(command,msg):

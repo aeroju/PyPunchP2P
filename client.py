@@ -45,6 +45,7 @@ class Client():
             self.sockfd = self.target = None
             self.periodic_running = False
             self.peer_nat_type = None
+
         except (IndexError, ValueError):
             print("usage: %s <host> <port> <pool>" % sys.argv[0])
             sys.exit(65)
@@ -69,6 +70,8 @@ class Client():
         print("connected to {1}:{2}, its NAT type is {0}".format(
             self.peer_nat_type, *self.target))
 
+        self.file_transfer = FileTransfer('./',self.sockfd,self.target)
+
     def _handle_msg(self,command,msg,sock,addr):
         print('receive msg command:',command,' msg:',msg)
         if (command == COMMAND_TEXT):
@@ -77,7 +80,10 @@ class Client():
             if data == "punching...\n":
                 sock.sendto("end punching\n".encode(), addr)
         elif (command == COMMAND_FILETRANSFER):
-            FileReceiver('./', sock, addr).run()
+            self.file_transfer.receive()
+            #self.file_receiver = FileReceiver('./', sock, addr)
+        elif (is_file_transfer(command)):
+            self.file_transfer.process_msg(command,msg)
 
     def recv_msg(self, sock, is_restrict=False, event=None):
         if is_restrict:
@@ -113,15 +119,7 @@ class Client():
             print('command:',command,'msg=',msg,'orig_data=',data,os.path.exists(os.path.join(exec_path,data)))
             sock.sendto(wapper(command,msg), self.target)
             if(command==COMMAND_FILETRANSFER):
-                fc = FileSender(os.path.join(exec_path,data),sock,addr)
-                fc.send()
-
-
-    def send_file(self,sock,fn):
-        #send file size and wait for response
-        #send file content by sequence, message body{fn:'',seq:1-n,cont:b''},cont was zipped
-
-        pass
+                self.file_transfer.send(os.path.join(exec_path,data))
 
     @staticmethod
     def start_working_threads(send, recv, event=None, *args, **kwargs):
