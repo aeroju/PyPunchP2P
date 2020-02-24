@@ -9,6 +9,7 @@ import time
 from threading import Event, Thread
 
 import stun
+sys.path.append('./')
 from message_wrapper import *
 from udp_filetransfer import *
 
@@ -67,6 +68,15 @@ class Client():
         print("connected to {1}:{2}, its NAT type is {0}".format(
             self.peer_nat_type, *self.target))
 
+    def _handle_msg(self,command,msg,sock,addr):
+        if (command == COMMAND_TEXT):
+            data = msg.msg
+            sys.stdout.write(data)
+            if data == "punching...\n":
+                sock.sendto("end punching\n".encode(), addr)
+        elif (command == COMMAND_FILETRANSFER):
+            FileReceiver('./', sock, addr).run()
+
     def recv_msg(self, sock, is_restrict=False, event=None):
         if is_restrict:
             while True:
@@ -79,21 +89,14 @@ class Client():
                     print("received msg from target,"
                           "periodic send cancelled, chat start.")
                 if addr == self.target or addr == self.master:
-                    if(command==COMMAND_TEXT):
-                        sys.stdout.write(data)
-                        if data == "punching...\n":
-                            sock.sendto("end punching\n".encode(), addr)
-                    elif(command==COMMAND_FILETRANSFER):
-                        FileReceiver('./',sock,addr).run()
+                    self._handle_msg(command,msg,sock,addr)
 
         else:
             while True:
                 data, addr = sock.recvfrom(1024)
-                data = data.decode()
+                command,msg = de_wapper(data)
                 if addr == self.target or addr == self.master:
-                    sys.stdout.write(data)
-                    if data == "punching...\n":  # peer是restrict
-                        sock.sendto("end punching".encode(), addr)
+                    self._handle_msg(command,msg,sock,addr)
 
     def send_msg(self, sock):
         while True:
