@@ -86,10 +86,14 @@ class FileReceiver(object):
         self.file_content={}
 
     def _receive_data(self,msg):
-        print('receive_data:',type(msg),msg['chunk'])
-        chunk = msg['chunk']
-        data = msg['data']
-        self.file_content[chunk] = data
+        try:
+            print('receive_data:',type(msg),msg['chunk'])
+            chunk = msg['chunk']
+            data = msg['data']
+            self.file_content[chunk] = data
+        except Exception as e:
+            print('except in receive file content:',msg)
+            pass
 
     def _receive_file_end(self,msg):
         missed = []
