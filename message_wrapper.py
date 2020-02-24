@@ -48,6 +48,7 @@ def wapper(command,msg):
     return pickle.dumps(content)
 
 def de_wapper(msg_body):
+    print('msg_body:',msg_body)
     content = pickle.loads(msg_body)
     command = content['command']
     msg = content['body']

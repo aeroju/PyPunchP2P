@@ -41,6 +41,7 @@ class FileSender(object):
         for c in range(self.chunks):
             data = self.file.read(self.chunksize)
             msg = {'chunk':c,'data':data}
+            print('file body:',msg)
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY,msg),self.targer)
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
 
