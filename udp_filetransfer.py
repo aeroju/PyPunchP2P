@@ -109,7 +109,7 @@ class FileReceiver(object):
             return False
 
 class FileTransfer(object):
-    def __init__(self,file_path,fsock,target_addr,chunksize=1024):
+    def __init__(self,file_path,fsock,target_addr,chunksize=900):
         self.file_sender = FileSender(file_path,fsock,target_addr,chunksize)
         self.file_receiver = FileReceiver(file_path,fsock,target_addr,chunksize)
 
