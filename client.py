@@ -73,7 +73,7 @@ class Client():
         self.file_transfer = FileTransfer('./',self.sockfd,self.target)
 
     def _handle_msg(self,command,msg,sock,addr):
-        print('receive msg command:',command,' msg:',msg)
+        print('receive msg command:',command)
         if (command == COMMAND_TEXT):
             data = msg['msg']
             sys.stdout.write(data)

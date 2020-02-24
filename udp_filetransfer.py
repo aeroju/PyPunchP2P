@@ -69,7 +69,6 @@ class FileReceiver(object):
         pass
 
     def process_msg(self,command,msg):
-        print('file receiver msg: command:', command, ' body:', msg)
         if (command == COMMAND_FILETRANSFER_META):
             self._receive_meta(msg)
         elif (command == COMMAND_FILETRANSFER_BODY):
