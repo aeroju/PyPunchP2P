@@ -9,6 +9,8 @@ import time
 from threading import Event, Thread
 
 import stun
+from .message_wrapper import *
+from .udp_filetransfer import *
 
 FullCone = "Full Cone"  # 0
 RestrictNAT = "Restrict NAT"  # 1
@@ -42,7 +44,7 @@ class Client():
             self.periodic_running = False
             self.peer_nat_type = None
         except (IndexError, ValueError):
-            print(sys.stderr, "usage: %s <host> <port> <pool>" % sys.argv[0])
+            print("usage: %s <host> <port> <pool>" % sys.argv[0])
             sys.exit(65)
 
     def request_for_connection(self, nat_type_id=0):
@@ -55,22 +57,21 @@ class Client():
             sys.exit(1)
         self.sockfd.sendto("ok".encode(), self.master)
         sys.stderr = sys.stdout
-        print(sys.stderr,
+        print(
               "request sent, waiting for partner in pool '%s'..." % self.pool)
         data, addr = self.sockfd.recvfrom(8)
-        print('received:',data)
 
         self.target, peer_nat_type_id = bytes2addr(data)
         print(self.target, peer_nat_type_id)
         self.peer_nat_type = NATTYPE[peer_nat_type_id]
-        print(sys.stderr, "connected to {1}:{2}, its NAT type is {0}".format(
+        print("connected to {1}:{2}, its NAT type is {0}".format(
             self.peer_nat_type, *self.target))
 
     def recv_msg(self, sock, is_restrict=False, event=None):
         if is_restrict:
             while True:
                 data, addr = sock.recvfrom(1024)
-                data = data.decode()
+                command,msg = de_wapper(data)
                 if self.periodic_running:
                     print("periodic_send is alive")
                     self.periodic_running = False
@@ -78,9 +79,13 @@ class Client():
                     print("received msg from target,"
                           "periodic send cancelled, chat start.")
                 if addr == self.target or addr == self.master:
-                    sys.stdout.write(data)
-                    if data == "punching...\n":
-                        sock.sendto("end punching\n".encode(), addr)
+                    if(command==COMMAND_TEXT):
+                        sys.stdout.write(data)
+                        if data == "punching...\n":
+                            sock.sendto("end punching\n".encode(), addr)
+                    elif(command==COMMAND_FILETRANSFER):
+                        FileReceiver('./',sock,addr).run()
+
         else:
             while True:
                 data, addr = sock.recvfrom(1024)
@@ -93,7 +98,20 @@ class Client():
     def send_msg(self, sock):
         while True:
             data = sys.stdin.readline()
-            sock.sendto(data.encode(), self.target)
+            if(os.path.exists(data)):
+                command=COMMAND_FILETRANSFER
+                msg=''
+            else:
+                command=COMMAND_TEXT
+                msg = {'msg':data}
+            sock.sendto(wapper(command,msg), self.target)
+
+
+    def send_file(self,sock,fn):
+        #send file size and wait for response
+        #send file content by sequence, message body{fn:'',seq:1-n,cont:b''},cont was zipped
+
+        pass
 
     @staticmethod
     def start_working_threads(send, recv, event=None, *args, **kwargs):
@@ -163,7 +181,6 @@ class Client():
             print("NAT type is %s" % nat_type)
             self.request_for_connection(nat_type_id=4)  # Unknown NAT
 
-        print('NAT Type from:',nat_type)
         if nat_type == UnknownNAT or self.peer_nat_type == UnknownNAT:
             print("Symmetric chat mode")
             self.chat_symmetric()
