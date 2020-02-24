@@ -81,11 +81,12 @@ class FileReceiver(object):
         self.chunks = msg['length']
         self.filename = msg['filename']
         self.file = open(os.path.join(self.filepath,self.filename),'wb')
-        print('sending ack')
+        print('meta received, sending ack')
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_META_ACK,''),self.target)
         self.file_content={}
 
     def _receive_data(self,msg):
+        print(msg)
         chunk = msg['chunk']
         data = msg['data']
         self.file_content[chunk] = data
