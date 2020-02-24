@@ -4,7 +4,7 @@
 import optparse
 import socket
 import struct
-import sys
+import sys,os
 import time
 from threading import Event, Thread
 
@@ -20,6 +20,7 @@ SymmetricNAT = "Symmetric NAT"  # 3
 UnknownNAT = "Unknown NAT"  # 4
 NATTYPE = (FullCone, RestrictNAT, RestrictPortNAT, SymmetricNAT, UnknownNAT)
 
+exec_path = os.getcwd()
 
 def bytes2addr(bytes):
     """Convert a hash to an address pair."""
@@ -69,6 +70,7 @@ class Client():
             self.peer_nat_type, *self.target))
 
     def _handle_msg(self,command,msg,sock,addr):
+        print('receive msg command:',command,' msg:',msg)
         if (command == COMMAND_TEXT):
             data = msg['msg']
             sys.stdout.write(data)
@@ -98,16 +100,21 @@ class Client():
                 if addr == self.target or addr == self.master:
                     self._handle_msg(command,msg,sock,addr)
 
-    def send_msg(self, sock):
+    def send_msg(self, sock,addr):
         while True:
-            data = sys.stdin.readline()
-            if(os.path.exists(data)):
+            data = sys.stdin.readline().strip()
+
+            if(os.path.exists(os.path.join(exec_path,data))):
                 command=COMMAND_FILETRANSFER
                 msg=''
             else:
                 command=COMMAND_TEXT
                 msg = {'msg':data}
+            print('command:',command,'msg=',msg,'orig_data=',data,os.path.exists(os.path.join(exec_path,data)))
             sock.sendto(wapper(command,msg), self.target)
+            if(command==COMMAND_FILETRANSFER):
+                fc = FileSender(os.path.join(exec_path,data),sock,addr)
+                fc.send()
 
 
     def send_file(self,sock,fn):
@@ -129,7 +136,7 @@ class Client():
 
     def chat_fullcone(self):
         self.start_working_threads(self.send_msg, self.recv_msg, None,
-                                   self.sockfd)
+                                   self.sockfd,self.target)
 
     def chat_restrict(self):
         from threading import Timer
