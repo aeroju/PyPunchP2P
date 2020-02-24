@@ -9,7 +9,7 @@ import time
 from threading import Event, Thread
 
 import stun
-sys.path.append('./')
+
 from message_wrapper import *
 from udp_filetransfer import *
 
