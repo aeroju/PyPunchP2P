@@ -3,7 +3,7 @@ import time
 import os
 import math
 
-from .message_wrapper import *
+from message_wrapper import *
 
 class FileSender(object):
     def __init__(self,filename,fsock,target,chunksize = 1024,timeout=2):

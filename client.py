@@ -9,8 +9,8 @@ import time
 from threading import Event, Thread
 
 import stun
-from .message_wrapper import *
-from .udp_filetransfer import *
+from message_wrapper import *
+from udp_filetransfer import *
 
 FullCone = "Full Cone"  # 0
 RestrictNAT = "Restrict NAT"  # 1
