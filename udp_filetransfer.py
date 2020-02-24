@@ -30,8 +30,7 @@ class FileSender(object):
             print('ack received, send all')
             self._send_all()
         elif(command==COMMAND_FILETRANSFER_BODY_MISS):
-            missed = msg
-            self._send_chunk(missed)
+            self._send_chunk(msg)
         elif(command==COMMAND_FILETRANSFER_BODY_ACK):
             print('body ack, closing')
             self.close()
@@ -42,14 +41,18 @@ class FileSender(object):
             data = self.file.read(self.chunksize)
             msg = {'chunk':c,'data':data}
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY,msg),self.targer)
+        print('total chunk send:',self.chunks, ' sending body end')
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
 
-    def _send_chunk(self,missed):
+    def _send_chunk(self,msg):
+        missed = msg['missed']
+        print('missed chunk:',missed)
         for c in missed:
             self.file.seek(c * self.chunksize)
             data = self.file.read(self.chunksize)
             msg = {'chunk':c,'data':data}
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY,msg),self.targer)
+        print('missed sended, sending body end')
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_END,''),self.targer)
 
     def send(self,filename):
@@ -96,19 +99,24 @@ class FileReceiver(object):
             pass
 
     def _receive_file_end(self,msg):
+        print(' body end received, begin check missing')
         missed = []
         for i in range(self.chunks):
             if(self.file_content.get(i) is None):
                 missed.append(i)
         if(len(missed)==0):
+            print('all chunk received, begin write file')
             contents = sorted(self.file_content.keys())
             for c in contents:
                 self.file.write(c)
             self.file.close()
+            print('file saved, sending ack')
             self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_ACK,''),self.target)
             return True
         else:
-            self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_MISS,missed),self.target)
+            print('missed chunk:',missed,' sending missed')
+            msg = {'missed':missed}
+            self.fsock.sendto(wapper(COMMAND_FILETRANSFER_BODY_MISS,msg),self.target)
             return False
 
 class FileTransfer(object):
