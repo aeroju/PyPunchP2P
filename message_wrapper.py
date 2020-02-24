@@ -33,8 +33,8 @@ def wapper(command,msg):
 
 def de_wapper(msg_body):
     content = pickle.loads(msg_body)
-    command = content.command
-    msg = content.body
+    command = content['command']
+    msg = content['body']
     if command not in Commands:
         return None,None
     return command,msg

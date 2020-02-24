@@ -70,7 +70,7 @@ class Client():
 
     def _handle_msg(self,command,msg,sock,addr):
         if (command == COMMAND_TEXT):
-            data = msg.msg
+            data = msg['msg']
             sys.stdout.write(data)
             if data == "punching...\n":
                 sock.sendto("end punching\n".encode(), addr)
