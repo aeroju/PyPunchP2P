@@ -30,6 +30,7 @@ class FileSender(object):
         self.fsock.settimeout(self.timeout)
         try:
             while True:
+                print('begin receiving ack')
                 data,addr = self.fsock.recvfrom(1024)
                 command,msg = de_wapper(data)
                 print('ack received:',addr,self.targer)
@@ -75,7 +76,10 @@ class FileSender(object):
 
     def send(self):
         self._send_meta()
+        print('meta sended,waiting for ack')
+        time.sleep(1)
         if(self._receive_acknowledge()):
+            print('ack received')
             time.sleep(1)
             self._send_all()
             missed = self._receive_missed()
@@ -120,6 +124,7 @@ class FileReceiver(object):
         self.chunks = msg['length']
         self.filename = msg['filename']
         self.file = open(os.path.join(self.filepath,self.filename),'wb')
+        print('sending ack')
         self.fsock.sendto(wapper(COMMAND_FILETRANSFER_META_ACK,''),self.target)
         self.file_content={}
 
