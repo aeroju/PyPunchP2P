@@ -1,4 +1,8 @@
+# coding:utf-8
+
 import pickle
+
+__version__ = "0.0.1"
 
 COMMAND_FILETRANSFER=100
 COMMAND_FILETRANSFER_META=101
