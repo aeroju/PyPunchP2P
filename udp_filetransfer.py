@@ -86,7 +86,7 @@ class FileReceiver(object):
         self.file_content={}
 
     def _receive_data(self,msg):
-        print(msg)
+        print('receive_data:',type(msg),msg['chunk'])
         chunk = msg['chunk']
         data = msg['data']
         self.file_content[chunk] = data
