@@ -44,6 +44,7 @@ class TcpClient(object):
 
 
     def _connect(self,local,peer):
+        print('peer type:',type(peer))
         logger.info('begin to connect to peer:%s:%d',peer[0],peer[1])
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -107,7 +108,7 @@ class TcpClient(object):
                 for peer in peers:
                     # peer = tuple(peer)
                     # print(peer)
-                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr[1],peer,))
+                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
                     self.peers_thread.append(peer_thread)
                     peer_thread.start()
 
