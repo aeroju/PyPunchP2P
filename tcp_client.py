@@ -29,7 +29,7 @@ class TcpClient(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         sock.bind(('',port))
-        sock.listen(1)
+        sock.listen()
         sock.settimeout(self.timeout)
         while(not self.stop_event.is_set()):
             try:
@@ -74,14 +74,13 @@ class TcpClient(object):
         self.stop_event = threading.Event()
 
         msg = {'local_addr':self.local_addr,'peer_key':key}
-        print(msg.__str__())
         self.fsock.send(wapper(COMMAND_SIGN,msg))
 
         data = self.fsock.recv(1024)
         command,msg = de_wapper(data)
         if(command==COMMAND_SIGN_ACK):
             self.public_addr = msg['public_addr']
-            logger.info('public address: %s:%d',self.public_addr)
+            logger.info('public address: %s:%d',self.public_addr[0],self.public_addr[1])
             self.local_server_thread = threading.Thread(target=self._accept,args=(self.local_addr[1]))
             self.local_server_thread.start()
 

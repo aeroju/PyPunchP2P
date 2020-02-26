@@ -25,10 +25,8 @@ class TcpServer(object):
         while(not stop_event.is_set()):
             try:
                 data = conn.recv(1024)
-                print('data=',data)
                 command,msg = de_wapper(data)
-                print(command,msg)
-                logger.info('from client command: %d', command)
+                logger.info('from client command: %d,msg=', command,msg.__str__())
                 if(command==COMMAND_SIGN):
                     client_local_addr = msg['local_addr']
                     peer_key = msg['peer_key']
@@ -42,7 +40,7 @@ class TcpServer(object):
                 elif(command==COMMAND_REQUEST_PEER):
                     peer_key = msg['peer_key']
                     peers = []
-                    for key,item in self.clients:
+                    for key,item in self.clients.items():
                         if(item.get('peer_key') is not None and item.get('peer_key')==peer_key):
                             if(key!=client_addr):
                                 peers.append(item.get('public_addr'))
