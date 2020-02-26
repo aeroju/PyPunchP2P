@@ -48,8 +48,8 @@ def is_file_transfer_send(command):
 
 
 def wapper(command,msg):
-    if command not in Commands:
-        return None
+    # if command not in Commands:
+    #     return None
     content = {'command':command,'body':msg}
     return pickle.dumps(content)
 

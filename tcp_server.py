@@ -14,11 +14,11 @@ class TcpServer(object):
         self.peers = {}
 
     def get_client(self,addr):
-        key = addr[0] + ':' + addr[1]
+        key = addr[0] + ':' + str(addr[1])
         return self.clients.get(key)
 
     def set_client(self,addr,client_info):
-        key = addr[0] + ':' + addr[1]
+        key = addr[0] + ':' + str(addr[1])
         self.clients[key] = client_info
 
     def _client_handler(self,conn,client_addr,stop_event):
@@ -59,7 +59,7 @@ class TcpServer(object):
             except socket.timeout:
                 logger.info('timeout waiting for next connect')
                 continue
-            logger.info('connection from: %s:%d',addr)
+            logger.info('connection from: %s:%d',addr[0],addr[1])
             client_thread = threading.Thread(target=self._client_handler,args=(conn,addr,stop_event))
             client_info = {}
             client_info['thread'] = client_thread
