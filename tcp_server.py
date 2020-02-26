@@ -26,6 +26,7 @@ class TcpServer(object):
             try:
                 data = conn.recv(1024)
                 command,msg = de_wapper(data)
+                print(command,msg)
                 logger.info('from client command: %d', command)
                 if(command==COMMAND_SIGN):
                     client_local_addr = msg['local_addr']
