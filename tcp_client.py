@@ -96,8 +96,7 @@ class TcpClient(object):
                     peers.append(peers_raw)
                 else:
                     peers = peers_raw
-                print(peers)
-                logger.info('peers: %s',peers.__str__())
+                # logger.info('peers: %s',peers.__str__())
                 self.peers_thread=[]
                 for peer in peers:
                     # peer = tuple(peer)
