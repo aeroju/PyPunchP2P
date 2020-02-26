@@ -26,7 +26,7 @@ class TcpServer(object):
             try:
                 data = conn.recv(1024)
                 command,msg = de_wapper(data)
-                logger.info('from client command: %d,msg=%s', command,msg.__str__())
+                logger.info('from client command: %d,%s', command,msg.__str__())
                 if(command==COMMAND_SIGN):
                     client_local_addr = msg['local_addr']
                     peer_key = msg['peer_key']
