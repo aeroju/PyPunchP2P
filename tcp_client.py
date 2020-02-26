@@ -17,9 +17,11 @@ class TcpClient(object):
         while not self.stop_event.is_set():
             try:
                 data = conn.recv(1024)
+                time.sleep(1)
                 command,msg = de_wapper(data)
                 logger.info('message from peer: %d,%s',command,msg.__str__())
-            except socket.timeout:
+            except:
+                time.sleep(1)
                 continue
         conn.close()
 
@@ -57,21 +59,21 @@ class TcpClient(object):
                 sock.connect(peer)
                 logger.info('connect to peer success, begin send hello')
                 sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+                while not self.stop_event.is_set():
+                    try:
+                        data = sock.recv(1024)
+                        command, msg = de_wapper(data)
+                        logger.info('message from peer:%d,%s', command, msg.__str__())
+                        sock.send(data)
+                        time.sleep(1)
+                    except socket.error:
+                        continue
+                sock.close()
                 break
             except socket.error:
                 print('trying:',i)
                 time.sleep(0.5)
                 continue
-        while not self.stop_event.is_set():
-            try:
-                data = sock.recv(1024)
-                command,msg = de_wapper(data)
-                logger.info('message from peer:%d,%s',command,msg.__str__())
-                sock.send(data)
-                time.sleep(1)
-            except socket.error:
-                continue
-        sock.close()
 
 
     def run(self,port = 1234,key = 100):
