@@ -74,6 +74,7 @@ class TcpClient(object):
         self.stop_event = threading.Event()
 
         msg = {'local_addr':self.local_addr,'peer_key':key}
+        print(msg.__str__())
         self.fsock.send(wapper(COMMAND_SIGN,msg))
 
         data = self.fsock.recv(1024)
