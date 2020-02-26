@@ -3,7 +3,7 @@ import threading
 import time
 import logging
 
-from .message_wrapper import *
+from message_wrapper import *
 logger = logging.getLogger('tcp_client')
 logging.basicConfig(level=logging.INFO,format='%(asctime)s - %(message)s')
 
