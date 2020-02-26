@@ -13,13 +13,14 @@ class TcpServer(object):
         self.clients={}
         self.peers = {}
 
+    def _addr_to_key(self,addr):
+        return addr[0] + ':' + str(addr[1])
+
     def get_client(self,addr):
-        key = addr[0] + ':' + str(addr[1])
-        return self.clients.get(key)
+        return self.clients.get(self._addr_to_key(addr))
 
     def set_client(self,addr,client_info):
-        key = addr[0] + ':' + str(addr[1])
-        self.clients[key] = client_info
+        self.clients[self._addr_to_key(addr)] = client_info
 
     def _client_handler(self,conn,client_addr,stop_event):
         while(not stop_event.is_set()):
@@ -43,7 +44,7 @@ class TcpServer(object):
                     logger.info('begin to get peer for:%s:%d',client_addr[0],client_addr[1])
                     for key,item in self.clients.items():
                         if(item.get('peer_key') is not None and item.get('peer_key')==peer_key):
-                            if(key!=client_addr):
+                            if(key!=self._addr_to_key(client_addr)):
                                 peers.append(item.get('public_addr'))
                     msg={'peers':peers}
                     logger.info('message send to client:%s', msg.__str__())
