@@ -49,8 +49,13 @@ class TcpClient(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         sock.bind(local)
-        sock.connect(peer)
-        sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+        sock.settimeout(1)
+        for i in range(10):
+            try:
+                sock.connect(peer)
+                sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+            except socket.error:
+                continue
         while not self.stop_event.is_set():
             try:
                 data = sock.recv(1024)
@@ -101,7 +106,7 @@ class TcpClient(object):
                 for peer in peers:
                     # peer = tuple(peer)
                     # print(peer)
-                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
+                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr[1],peer,))
                     self.peers_thread.append(peer_thread)
                     peer_thread.start()
 
