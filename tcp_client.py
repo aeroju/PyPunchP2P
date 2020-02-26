@@ -108,9 +108,10 @@ class TcpClient(object):
                 for peer in peers:
                     # peer = tuple(peer)
                     # print(peer)
-                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
-                    self.peers_thread.append(peer_thread)
-                    peer_thread.start()
+                    if(len(peer)==2):
+                        peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
+                        self.peers_thread.append(peer_thread)
+                        peer_thread.start()
 
 
 if __name__ == '__main__':
