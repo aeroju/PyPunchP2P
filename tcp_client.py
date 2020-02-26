@@ -55,6 +55,7 @@ class TcpClient(object):
                 sock.connect(peer)
                 sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
             except socket.error:
+                print('trying:',i)
                 continue
         while not self.stop_event.is_set():
             try:
