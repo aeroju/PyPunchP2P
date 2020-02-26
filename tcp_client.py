@@ -90,8 +90,7 @@ class TcpClient(object):
             data = self.fsock.recv(1024)
             command,msg = de_wapper(data)
             if(command==COMMAND_REQUEST_PEER_ACK):
-                peers = []
-                peers.extend(msg['peers'])
+                peers = msg['peers']
                 logger.info('peers: %s',peers.__str__())
                 self.peers_thread=[]
                 for peer in peers:
