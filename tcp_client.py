@@ -35,10 +35,13 @@ class TcpClient(object):
             try:
                 conn,addr = sock.accept()
                 conn.settimeout(self.timeout)
-                server_thread = threading.Thread(target=self._local_server_hanlder,args=(conn))
+                conn.send(wapper(COMMAND_TEXT,{'msg':'ping'}))
+                server_thread = threading.Thread(target=self._local_server_hanlder,args=(conn,))
+                server_thread.start()
             except socket.timeout:
                 continue
         sock.close()
+
 
     def _connect(self,local,peer):
         logger.info('begin to connect to peer:%s:%d',peer)
@@ -46,12 +49,18 @@ class TcpClient(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         sock.bind(local)
+        sock.connect(peer)
+        sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
         while not self.stop_event.is_set():
             try:
-                sock.connect(peer)
-                sock.send(wapper(COMMAND_TEXT,{'msg':'hello'}))
+                data = sock.recv(1024)
+                command,msg = de_wapper(data)
+                logger.info('message from peer:%d,%s',command,msg.__str__())
+                sock.send(data)
+                time.sleep(1)
             except socket.error:
                 continue
+        sock.close()
 
 
     def run(self,port = 1234,key = 100):
