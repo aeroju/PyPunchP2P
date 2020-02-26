@@ -95,6 +95,7 @@ class TcpClient(object):
                 logger.info('peers: %s',peers.__str__())
                 self.peers_thread=[]
                 for peer in peers:
+                    peer = tuple(peer)
                     print(peer)
                     peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
                     self.peers_thread.append(peer_thread)
