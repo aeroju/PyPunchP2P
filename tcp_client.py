@@ -34,6 +34,7 @@ class TcpClient(object):
         while(not self.stop_event.is_set()):
             try:
                 conn,addr = sock.accept()
+                logger.info('connection received----------------------')
                 conn.settimeout(self.timeout)
                 conn.send(wapper(COMMAND_TEXT,{'msg':'ping'}))
                 server_thread = threading.Thread(target=self._local_server_hanlder,args=(conn,))
@@ -54,6 +55,7 @@ class TcpClient(object):
         for i in range(10):
             try:
                 sock.connect(peer)
+                logger.info('connect to peer success, begin send hello')
                 sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
                 break
             except socket.error:
@@ -89,8 +91,10 @@ class TcpClient(object):
         if(command==COMMAND_SIGN_ACK):
             self.public_addr = msg['public_addr']
             logger.info('public address: %s:%d',self.public_addr[0],self.public_addr[1])
-            self.local_server_thread = threading.Thread(target=self._accept,args=(self.local_addr[1],))
-            self.local_server_thread.start()
+            self.local_server_thread_0 = threading.Thread(target=self._accept,args=(self.local_addr[1],))
+            self.local_server_thread_0.start()
+            self.local_server_thread_1 = threading.Thread(target=self._accept, args=(self.public_addr[1],))
+            self.local_server_thread_1.start()
 
         logger.info('requesting peer...')
         self.fsock.send(wapper(COMMAND_REQUEST_PEER,{'peer_key':key}))
