@@ -57,6 +57,7 @@ class TcpServer(object):
             try:
                 conn,addr = fsock.accept()
             except socket.timeout:
+                logger.info('timeout waiting for next connect')
                 continue
             logger.info('connection from: %s:%d',addr)
             client_thread = threading.Thread(target=self._client_handler,args=(conn,addr,stop_event))
@@ -73,8 +74,8 @@ class TcpServer(object):
         self.fsock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.fsock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
         self.fsock.bind(('0.0.0.0',self.port))
-        self.fsock.listen(1)
-        self.fsock.settimeout(2)
+        self.fsock.listen()
+        # self.fsock.settimeout(2)
         logger.info('server start at %d' , self.port)
 
         self.run_thread =  threading.Thread(target=self._accept,args=(self.fsock,self.stop_event,))

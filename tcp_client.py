@@ -66,12 +66,13 @@ class TcpClient(object):
     def run(self,port = 1234,key = 100):
         self.fsock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.fsock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        logger.info('trying to connect to:%s:%d',self.server[0],self.server[1])
         self.fsock.connect(self.server)
+        logger.info('connect to server and regist for peer key %s',key)
         self.local_addr = self.fsock.getsockname()
 
         self.stop_event = threading.Event()
 
-        logger.info('connect to server and regist for peer key %s',key)
         msg = {'local_addr':self.local_addr,'peer_key':key}
         self.fsock.send(wapper(COMMAND_SIGN,msg))
 
