@@ -44,7 +44,7 @@ class TcpClient(object):
 
 
     def _connect(self,local,peer):
-        logger.info('begin to connect to peer:%s:%d',peer)
+        logger.info('begin to connect to peer:%s:%d',peer[0],peer[1])
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
