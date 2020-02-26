@@ -32,7 +32,6 @@ class TcpClient(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         sock.bind(('',port))
         sock.listen()
-        sock.settimeout(self.timeout)
         while(not self.stop_event.is_set()):
             try:
                 conn,addr = sock.accept()
