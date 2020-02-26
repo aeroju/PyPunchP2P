@@ -91,11 +91,12 @@ class TcpClient(object):
             command,msg = de_wapper(data)
             if(command==COMMAND_REQUEST_PEER_ACK):
                 peers = msg['peers']
+                print(peers)
                 logger.info('peers: %s',peers.__str__())
                 self.peers_thread=[]
                 for peer in peers:
-                    peer = tuple(peer)
-                    print(peer)
+                    # peer = tuple(peer)
+                    # print(peer)
                     peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
                     self.peers_thread.append(peer_thread)
                     peer_thread.start()
