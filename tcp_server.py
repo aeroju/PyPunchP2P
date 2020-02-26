@@ -46,6 +46,8 @@ class TcpServer(object):
                         if(item.get('peer_key') is not None and item.get('peer_key')==peer_key):
                             if(key!=self._addr_to_key(client_addr)):
                                 peers.append(item.get('public_addr'))
+                                #send peers to A
+                                item['conn'].send(wapper(COMMAND_REQUEST_PEER_ACK,{'peers':client_addr}))
                     msg={'peers':peers}
                     logger.info('message send to client:%s', msg.__str__())
                     conn.send(wapper(COMMAND_REQUEST_PEER_ACK,msg))
@@ -66,6 +68,7 @@ class TcpServer(object):
             client_info = {}
             client_info['thread'] = client_thread
             client_info['public_addr'] = addr
+            client_info['conn'] = conn
             self.set_client(addr,client_info)
             client_thread.start()
 

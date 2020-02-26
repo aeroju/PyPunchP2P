@@ -86,16 +86,17 @@ class TcpClient(object):
 
         logger.info('requesting peer...')
         self.fsock.send(wapper(COMMAND_REQUEST_PEER,{'peer_key':key}))
-        data = self.fsock.recv(1024)
-        command,msg = de_wapper(data)
-        if(command==COMMAND_REQUEST_PEER_ACK):
-            peers = msg['peers']
-            logger.info('peers: %s',peers.__str__())
-            self.peers_thread=[]
-            for peer in peers:
-                peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
-                self.peers_thread.append(peer_thread)
-                peer_thread.start()
+        while True:
+            data = self.fsock.recv(1024)
+            command,msg = de_wapper(data)
+            if(command==COMMAND_REQUEST_PEER_ACK):
+                peers = msg['peers']
+                logger.info('peers: %s',peers.__str__())
+                self.peers_thread=[]
+                for peer in peers:
+                    peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
+                    self.peers_thread.append(peer_thread)
+                    peer_thread.start()
 
 
 if __name__ == '__main__':
