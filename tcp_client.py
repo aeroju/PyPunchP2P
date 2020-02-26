@@ -60,6 +60,7 @@ class TcpClient(object):
                 break
             except socket.error:
                 print('trying:',i)
+                time.sleep(0.5)
                 continue
         while not self.stop_event.is_set():
             try:
@@ -76,6 +77,7 @@ class TcpClient(object):
     def run(self,port = 1234,key = 100):
         self.fsock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.fsock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+        self.fsock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEPORT,1)
         logger.info('trying to connect to:%s:%d',self.server[0],self.server[1])
         self.fsock.connect(self.server)
         logger.info('connect to server and regist for peer key %s',key)

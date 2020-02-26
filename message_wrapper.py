@@ -54,9 +54,11 @@ def wapper(command,msg):
     return pickle.dumps(content)
 
 def de_wapper(msg_body):
-    content = pickle.loads(msg_body)
-    command = content['command']
-    msg = content['body']
-    # if command not in Commands:
-    #     return None,None
-    return command,msg
+    try:
+        content = pickle.loads(msg_body)
+        command = content['command']
+        msg = content['body']
+        return command,msg
+    except :
+        print('error when de_wapper:',msg_body)
+        return None,None
