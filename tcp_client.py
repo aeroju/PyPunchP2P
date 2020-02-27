@@ -48,18 +48,19 @@ class TcpClient(object):
 
 
     def _connect(self,local,peer):
-        print('peer type:',type(peer))
         logger.info('begin to connect to peer:%s:%d',peer[0],peer[1])
-        sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        sock.bind(local)
-        sock.settimeout(1)
         for i in range(10):
             try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                sock.bind(local)
+                sock.settimeout(2)
                 sock.connect(peer)
                 logger.info('connect to peer success, begin send hello')
-                sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+                bts = sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+                print(sock.getpeername(),':',bts)
+                logger.info('hello send, send next 20 hello')
                 for _ in range(20):
                     sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
                 while not self.stop_event.is_set():
@@ -74,8 +75,8 @@ class TcpClient(object):
                         continue
                 sock.close()
                 break
-            except socket.error:
-                print('trying:',i)
+            except socket.error as e:
+                print('trying:',i,e)
                 time.sleep(0.5)
                 continue
 
@@ -101,8 +102,8 @@ class TcpClient(object):
             logger.info('public address: %s:%d',self.public_addr[0],self.public_addr[1])
             self.local_server_thread_0 = threading.Thread(target=self._accept,args=(self.local_addr[1],))
             self.local_server_thread_0.start()
-            self.local_server_thread_1 = threading.Thread(target=self._accept, args=(self.public_addr[1],))
-            self.local_server_thread_1.start()
+            # self.local_server_thread_1 = threading.Thread(target=self._accept, args=(self.public_addr[1],))
+            # self.local_server_thread_1.start()
 
         logger.info('requesting peer...')
         self.fsock.send(wapper(COMMAND_REQUEST_PEER,{'peer_key':key}))
@@ -140,10 +141,7 @@ class TcpClient(object):
                     try_sock.bind(self.local_addr)
                     try_sock.connect_ex(peers[0])
                     try_sock.close()
-                    logger.info('send ack to peer finished')
-
-
-
+                    logger.info('send ack to peer(%s:%d) finished',peers[0][0],peers[0][1])
             except:
                 break
 

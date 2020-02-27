@@ -52,6 +52,7 @@ class TcpServer(object):
                                 #send peers to A
                                 logger.info('send connect request to peer:%s',client_addr.__str__())
                                 item['conn'].send(wapper(COMMAND_REQUEST_PEER_CLIENT,{'peers':client_addr}))
+                                time.sleep(1)
                     if len(peers)>0: peers.append(())
                     msg={'peers':peers}
                     logger.info('message send to client:%s', msg.__str__())
