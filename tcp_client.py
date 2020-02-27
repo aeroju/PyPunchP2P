@@ -121,6 +121,24 @@ class TcpClient(object):
                             peer_thread = threading.Thread(target=self._connect,args=(self.local_addr,peer,))
                             self.peers_thread.append(peer_thread)
                             peer_thread.start()
+                elif(command==COMMAND_REQUEST_PEER_CLIENT): #there will be connection from client, act like server
+                    peers_raw = msg['peers']
+                    if(type(peers_raw)==tuple):
+                        peers =[]
+                        peers.append(peers_raw)
+                    else:
+                        peers = peers_raw
+
+                    try_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                    try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                    try_sock.bind(self.local_addr)
+                    try_sock.connect_ex(peers[0])
+                    try_sock.close()
+                    logger.info('send ack to peer finished')
+
+
+
             except:
                 break
 
