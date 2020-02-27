@@ -26,6 +26,9 @@ class TcpServer(object):
         while(not stop_event.is_set()):
             try:
                 data = conn.recv(1024)
+                if(len(data)==0):
+                    time.sleep(1)
+                    continue
                 command,msg = de_wapper(data)
                 logger.info('from client command: %d,%s', command,msg.__str__())
                 if(command==COMMAND_SIGN):

@@ -17,9 +17,9 @@ class TcpClient(object):
         while not self.stop_event.is_set():
             try:
                 data = conn.recv(1024)
-                time.sleep(1)
-                command,msg = de_wapper(data)
-                logger.info('message from peer: %d,%s',command,msg.__str__())
+                if(len(data)>0):
+                    command,msg = de_wapper(data)
+                    logger.info('message from peer: %d,%s',command,msg.__str__())
             except:
                 time.sleep(1)
                 continue
@@ -42,6 +42,7 @@ class TcpClient(object):
                 server_thread.start()
             except socket.timeout:
                 continue
+                time.sleep(1)
         sock.close()
 
 
@@ -61,11 +62,12 @@ class TcpClient(object):
                 while not self.stop_event.is_set():
                     try:
                         data = sock.recv(1024)
-                        command, msg = de_wapper(data)
-                        logger.info('message from peer:%d,%s', command, msg.__str__())
-                        sock.send(data)
-                        time.sleep(1)
+                        if(len(data)>0):
+                            command, msg = de_wapper(data)
+                            logger.info('message send to peer:%d,%s', command, msg.__str__())
+                            sock.send(data)
                     except socket.error:
+                        time.sleep(1)
                         continue
                 sock.close()
                 break
