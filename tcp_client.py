@@ -41,8 +41,9 @@ class TcpClient(object):
                 server_thread = threading.Thread(target=self._local_server_hanlder,args=(conn,))
                 server_thread.start()
             except socket.timeout:
-                continue
+                logger.info('_accept timeout')
                 time.sleep(1)
+                continue
         sock.close()
 
 
@@ -59,6 +60,8 @@ class TcpClient(object):
                 sock.connect(peer)
                 logger.info('connect to peer success, begin send hello')
                 sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
+                for _ in range(20):
+                    sock.send(wapper(COMMAND_TEXT, {'msg': 'hello'}))
                 while not self.stop_event.is_set():
                     try:
                         data = sock.recv(1024)
