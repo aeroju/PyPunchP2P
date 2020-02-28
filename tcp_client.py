@@ -134,14 +134,16 @@ class TcpClient(object):
                         peers.append(peers_raw)
                     else:
                         peers = peers_raw
+                    for i in range(10):
+                        try_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                        try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                        try_sock.bind(self.local_addr)
+                        try_sock.connect_ex(peers[0])
+                        try_sock.close()
+                        logger.info('send %d ack to peer(%s:%d) finished',i+1,peers[0][0],peers[0][1])
+                        time.sleep(1)
 
-                    try_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                    try_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-                    try_sock.bind(self.local_addr)
-                    try_sock.connect_ex(peers[0])
-                    try_sock.close()
-                    logger.info('send ack to peer(%s:%d) finished',peers[0][0],peers[0][1])
             except:
                 break
 
